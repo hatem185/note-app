@@ -1,7 +1,7 @@
 package com.example.notepad.ui.editornote
 
 
-import android.app.Application
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
@@ -17,42 +17,57 @@ import javax.inject.Inject
 class EditorNoteViewModel @Inject constructor(
     private val notePadDB: NotePadDB
 ) : ViewModel() {
+    lateinit var myContext: Context
     var editNote by mutableStateOf<Note?>(null)
         private set
     var txtTitle by mutableStateOf("")
     var txtContent by mutableStateOf("")
     var updateNoteDialogState by mutableStateOf(false)
         private set
-    var cancelEditDialogState by mutableStateOf(false)
+    var rollbackUpdateNoteDialogState by mutableStateOf(false)
         private set
 
     fun addNewNote() {
         if (txtContent.trim().isNotEmpty() && txtTitle.trim().isNotEmpty()) {
             viewModelScope.launch {
                 notePadDB.dao.insertNewNote(Note(nTitle = txtTitle, nContent = txtContent))
+                Toast.makeText(myContext, "New note is saved successfuly.", Toast.LENGTH_SHORT).show()
             }
+            return
         }
-
+        Toast.makeText(
+            myContext,
+            "The note content or title is empty nothing is saved.",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     fun updateNote() {
         editNote?.let {
             viewModelScope.launch {
                 notePadDB.dao.updateNote(
-                    it.copy(
-                        nTitle = txtTitle,
-                        nContent = txtContent
-                    )
+                    it.copy(nTitle = txtTitle, nContent = txtContent)
                 )
             }
         }
     }
 
-    fun isNoteChangeOnUpdate() {
-        editNote?.let {
-            updateNoteDialogState =
+    private fun isNoteUpdated(): Boolean {
+        return if (editNote != null)
+            editNote?.let {
                 it.nContent.trim() != txtContent.trim() || it.nTitle.trim() != txtTitle.trim()
-        }
+            }!!
+        else false
+    }
+
+    fun onUpdatedNote(): Boolean {
+        updateNoteDialogState = isNoteUpdated()
+        return updateNoteDialogState
+    }
+
+    fun checkNoteChangeAtRollback(): Boolean {
+        rollbackUpdateNoteDialogState = isNoteUpdated()
+        return rollbackUpdateNoteDialogState
     }
 
     fun setEditNoteProperty(note: Note) {
@@ -65,8 +80,8 @@ class EditorNoteViewModel @Inject constructor(
         updateNoteDialogState = dialogState
     }
 
-    fun changeCancelEditDialogState(dialogState: Boolean) {
-        cancelEditDialogState = dialogState
+    fun changeRollbackUpdateNoteDialogState(dialogState: Boolean) {
+        rollbackUpdateNoteDialogState = dialogState
     }
 
 

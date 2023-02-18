@@ -3,6 +3,8 @@ package com.example.notepad.ui.home
 import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +16,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.Alignment.Companion.TopCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -21,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.notepad.model.Note
 import com.example.notepad.ui.destinations.EditorScreenDestination
 import com.example.notepad.ui.maincompos.*
 import com.example.notepad.util.NoteColors
@@ -51,7 +55,7 @@ fun HomeScreen(nav: DestinationsNavigator, viewModel: RetrieveNotesViewModel = h
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues = it), contentAlignment = Center
+                    .padding(paddingValues = it), contentAlignment = TopCenter
             ) {
                 ContentHome(nav, viewModel)
             }
@@ -103,16 +107,12 @@ fun TopBarHome(
 
 @Composable
 fun ContentHome(nav: DestinationsNavigator, viewModel: RetrieveNotesViewModel) {
-    var resetColors = 0
-    val cardsColors = remember { mutableStateOf(NoteColors.cardsColors) }
     if (viewModel.notesList.isEmpty()) {
         EmptyHomeImage()
     } else {
         LazyColumn {
             items(viewModel.notesList) { note ->
-                if (resetColors >= cardsColors.value.size)
-                    resetColors = 0
-                NoteCard(nav, note, cardsColors.value[resetColors++])
+                NoteCard(nav, viewModel, note)
             }
         }
     }

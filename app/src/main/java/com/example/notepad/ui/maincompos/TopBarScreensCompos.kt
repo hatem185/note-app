@@ -7,10 +7,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -18,20 +15,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.ImageVector.Companion
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.notepad.R
-import com.example.notepad.model.Note
-import com.example.notepad.ui.destinations.EditorScreenDestination
-import com.example.notepad.ui.editornote.EditorNoteViewModel
 import com.example.notepad.ui.home.RetrieveNotesViewModel
-import com.example.notepad.util.NoteColors
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-
 
 
 @Composable
@@ -77,8 +64,13 @@ fun SearchBarField(viewModel: RetrieveNotesViewModel) {
 fun TopBarButton(
     icon: ImageVector,
     modifier: Modifier = Modifier.size(50.dp),
+    hide: () -> Boolean = { false },
     onClickBtn: () -> Unit
 ) {
+    if (hide()) {
+        println("${hide()}")
+        return
+    }
     Button(
         onClick = onClickBtn,
         colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF3B3B3B)),

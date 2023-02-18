@@ -3,14 +3,10 @@ package com.example.notepad.ui.maincompos
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.Text
+import androidx.compose.material.*
+
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +20,8 @@ import com.example.notepad.ui.destinations.DeatailsScreenDestination
 import com.example.notepad.ui.home.RetrieveNotesViewModel
 import com.example.notepad.util.NoteColors
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import me.saket.swipe.SwipeAction
+import me.saket.swipe.SwipeableActionsBox
 
 
 @Composable
@@ -40,24 +38,46 @@ fun EmptyHomeImage() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun NoteCard(nav: DestinationsNavigator, note: Note, cardColor: Color) {
-    Card(
-        shape = RoundedCornerShape(10.dp),
-        modifier = Modifier
-            .width(365.dp)
-            .padding(10.dp)
-            .clickable { nav.navigate(DeatailsScreenDestination(note.nId)) },
-        backgroundColor = cardColor,
-    ) {
-        Text(
-            text = note.nTitle,
-            fontSize = 25.sp,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 50.dp, vertical = 35.dp),
-            textAlign = TextAlign.Center
+fun NoteCard(
+    nav: DestinationsNavigator,
+    viewModel: RetrieveNotesViewModel,
+    note: Note,
+) {
+    val delete = listOf(
+        SwipeAction(
+            onSwipe = { viewModel.deleteNote(note) },
+            icon = painterResource(id = R.drawable.delete_24),
+            background = Color(0xFFC53030), isUndo = true
         )
+    )
+    SwipeableActionsBox(endActions = delete, swipeThreshold = (365 / 2).dp) {
+        Card(
+            shape = RoundedCornerShape(10.dp),
+            modifier = Modifier
+                .width(365.dp)
+                .padding(10.dp)
+                .clickable { nav.navigate(DeatailsScreenDestination(note.nId)) },
+            backgroundColor = NoteColors.cardsColors[1],
+        ) {
+            Text(
+                text = note.nTitle,
+                fontSize = 25.sp,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 50.dp, vertical = 35.dp),
+                textAlign = TextAlign.Center
+            )
+
+        }
     }
+
+
 }
 
+
+@Composable
+fun IC(func: @Composable () -> Unit) {
+    func()
+}

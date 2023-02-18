@@ -10,6 +10,7 @@ import com.example.notepad.model.NotePadDB
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,7 +22,6 @@ class RetrieveNotesViewModel @Inject constructor(private val notePadDB: NotePadD
     var openDialog by mutableStateOf(true)
         private set
     var openSearchBar by mutableStateOf(false)
-        private set
 
 
     init {
@@ -35,6 +35,12 @@ class RetrieveNotesViewModel @Inject constructor(private val notePadDB: NotePadD
 
     fun getNoteWithId(id: Int) {
         notePadDB.dao.getNoteById(id).onEach { note -> this.note = note }.launchIn(viewModelScope)
+    }
+
+    fun deleteNote(note: Note) {
+        viewModelScope.launch {
+            notePadDB.dao.deleteNote(note)
+        }
     }
 
     fun searchNotes(pattren: String) {
