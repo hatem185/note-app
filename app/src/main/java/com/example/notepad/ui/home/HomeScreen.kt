@@ -1,10 +1,8 @@
 package com.example.notepad.ui.home
 
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,7 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.notepad.model.Note
 import com.example.notepad.ui.destinations.EditorScreenDestination
 import com.example.notepad.ui.maincompos.*
 import com.example.notepad.util.NoteColors
@@ -32,48 +29,48 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @RequiresApi(Build.VERSION_CODES.R)
 @RootNavGraph(start = true)
 @Destination
 @Composable
 fun HomeScreen(nav: DestinationsNavigator, viewModel: RetrieveNotesViewModel = hiltViewModel()) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Center) {
-                    TopBarHome(
-                        viewModel = viewModel
-                    )
-                }
-            },
-            backgroundColor = NoteColors.backgroundColor,
-            floatingActionButton = {
-                FAB(nav = nav, icon = Default.Add) { nav.navigate(EditorScreenDestination()) }
+    val states = viewModel.states
+    Scaffold(
+        topBar = {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Center) {
+                TopBarHome(
+                    viewModel = viewModel
+                )
             }
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues = it), contentAlignment = TopCenter
-            ) {
-                ContentHome(nav, viewModel)
-            }
+        },
+        backgroundColor = NoteColors.backgroundColor,
+        floatingActionButton = {
+            FAB(icon = Default.Add) { nav.navigate(EditorScreenDestination()) }
         }
-        if (viewModel.openDialog) {
-            InfoDialog(viewModel)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues = it), contentAlignment = TopCenter
+        ) {
+            ContentHome(nav, viewModel)
         }
     }
+    InfoDialog(
+        openDialog = { states.openDialog },
+        onDiscardRequest = { states.changeDialogState(false) }
+    )
 }
-
 
 @Composable
 fun TopBarHome(
-    viewModel: RetrieveNotesViewModel,
+    viewModel: RetrieveNotesViewModel
 ) {
+    val states = viewModel.states
+//    viewModel.deleteAllNote()
     TopAppBar(
         title = {
-            if (viewModel.openSearchBar) {
+            if (states.openSearchBar) {
                 SearchBarField(viewModel = viewModel)
             } else {
                 Text(
@@ -86,13 +83,13 @@ fun TopBarHome(
             }
         },
         actions = {
-            if (!viewModel.openSearchBar) {
+            if (!states.openSearchBar) {
                 TopBarButton(icon = Icons.Outlined.Search) {
-                    viewModel.changeSearchBarState(true)
+                    states.changeSearchBarState(true)
                 }
                 Spacer(modifier = Modifier.width(15.dp))
                 TopBarButton(icon = Icons.Outlined.Info) {
-                    viewModel.changeDialogState(true)
+                    states.changeDialogState(true)
                 }
             }
         },
@@ -119,12 +116,12 @@ fun ContentHome(nav: DestinationsNavigator, viewModel: RetrieveNotesViewModel) {
 }
 
 @Composable
-fun FAB(nav: DestinationsNavigator, icon: ImageVector, onClickAction: () -> Unit) {
+fun FAB(icon: ImageVector, onClickAction: () -> Unit) {
     FloatingActionButton(
         onClick = onClickAction,
         modifier = Modifier.padding(20.dp),
         backgroundColor = NoteColors.backgroundColor,
-        elevation = FloatingActionButtonDefaults.elevation(16.dp)
+        elevation = FloatingActionButtonDefaults.elevation(16.dp),
     ) {
         Icon(
             imageVector = icon,
@@ -135,10 +132,10 @@ fun FAB(nav: DestinationsNavigator, icon: ImageVector, onClickAction: () -> Unit
 }
 
 @Composable
-fun InfoDialog(viewModel: RetrieveNotesViewModel) {
-    if (viewModel.openDialog) {
+fun InfoDialog(onDiscardRequest: () -> Unit, openDialog: () -> Boolean) {
+    if (openDialog()) {
         AlertDialog(
-            onDismissRequest = { viewModel.changeDialogState(false) },
+            onDismissRequest = onDiscardRequest,
             text = {
                 Column {
                     Text(
@@ -146,7 +143,8 @@ fun InfoDialog(viewModel: RetrieveNotesViewModel) {
                                 "Redesigned by - \n\n" +
                                 "Illustrations - \n\n" +
                                 "Icons - \n\n" +
-                                "Font -\n\n", modifier = Modifier
+                                "Font -\n\n",
+                        modifier = Modifier
                             .width(250.dp)
                             .wrapContentHeight(), color = Color(0xFFFCFCFC)
 

@@ -12,9 +12,6 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -37,7 +34,6 @@ fun DeatailsScreen(
     noteId: Int
 ) {
     val onBackPressed = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-
     viewModel.getNoteWithId(noteId)
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -57,7 +53,6 @@ fun DeatailsScreen(
             }
         }
     }
-
     onBackPressed?.addCallback { nav.popBackStack() }?.remove()
 }
 

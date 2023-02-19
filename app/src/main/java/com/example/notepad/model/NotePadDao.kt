@@ -14,6 +14,9 @@ interface NotePadDao {
     @Delete
     suspend fun deleteNote(note: Note): Int
 
+    @Query("DELETE FROM Note")
+    suspend fun deleteAllNote(): Int
+
     @Query("SELECT * FROM Note")
     fun getAllNotes(): Flow<List<Note>>
 

@@ -61,7 +61,7 @@ fun NoteCard(
                 .width(365.dp)
                 .padding(10.dp)
                 .clickable { nav.navigate(DeatailsScreenDestination(note.nId)) },
-            backgroundColor = NoteColors.cardsColors[1],
+            backgroundColor = Color(note.nColor),
         ) {
             Text(
                 text = note.nTitle,

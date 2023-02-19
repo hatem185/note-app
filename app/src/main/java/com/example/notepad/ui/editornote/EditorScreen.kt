@@ -2,9 +2,8 @@ package com.example.notepad.ui.editornote
 
 import androidx.activity.addCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -14,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +26,7 @@ import com.example.notepad.ui.maincompos.TopBarButton
 import com.example.notepad.util.NoteColors
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.example.notepad.ui.maincompos.ColorMenuPicker
 
 @Destination
 @Composable
@@ -67,7 +66,7 @@ fun TopBarEditor(
     nav: DestinationsNavigator,
     viewModel: EditorNoteViewModel,
 ) {
-    val context = LocalContext.current.applicationContext
+    val states = viewModel.states
     TopAppBar(
         title = { },
         navigationIcon = {
@@ -79,13 +78,16 @@ fun TopBarEditor(
             ) { nav.popBackStack() }
         },
         actions = {
+            ColorMenuPicker(viewModel = viewModel)
+            Spacer(modifier = Modifier.width(15.dp))
             TopBarButton(
                 icon = ImageVector.vectorResource(id = R.drawable.visibility_icon),
                 hide = { viewModel.editNote == null }
             ) {
                 if (!viewModel.checkNoteChangeAtRollback()) nav.popBackStack()
-
             }
+
+
             Spacer(modifier = Modifier.width(15.dp))
             TopBarButton(icon = ImageVector.vectorResource(id = R.drawable.save_icon)) {
                 if (viewModel.editNote == null) {
@@ -96,6 +98,7 @@ fun TopBarEditor(
                 if (!viewModel.onUpdatedNote()) nav.popBackStack()
 
             }
+
         },
         backgroundColor = NoteColors.backgroundColor,
         modifier = Modifier
@@ -104,33 +107,32 @@ fun TopBarEditor(
         elevation = 0.dp
     )
     UpdateDialog(
-        openDialog = { viewModel.updateNoteDialogState },
+        openDialog = { states.updateNoteDialogState },
         dialogMessage = "Save changes ?",
         confirmBtnTitle = "Save",
-        discardRequestEvent = { viewModel.changeUpdateDialogState(false) }
+        discardRequestEvent = { states.changeUpdateDialogState(false) }
     ) {
         viewModel.updateNote()
         nav.popBackStack()
     }
     UpdateDialog(
-        openDialog = { viewModel.rollbackUpdateNoteDialogState },
+        openDialog = { states.rollbackUpdateNoteDialogState },
         dialogMessage = "Are your sure you want discard your changes ?",
         confirmBtnTitle = "Keep",
-        discardRequestEvent = { viewModel.changeRollbackUpdateNoteDialogState(false) }
+        discardRequestEvent = { states.changeRollbackUpdateNoteDialogState(false) }
     ) {
         nav.popBackStack()
     }
     ShowToast(
-        showToast = { viewModel.successSaveToast },
+        showToast = { states.successSaveToast },
         message = "The note is saved successfuly.",
-        dismissToastState = { viewModel.changeSuccessSaveToastState(false) }
+        dismissToastState = { states.changeSuccessSaveToastState(false) }
     )
     ShowToast(
-        showToast = { viewModel.fieldSaveToast },
+        showToast = { states.fieldSaveToast },
         message = "The note content or title is empty nothing is saved.",
-        dismissToastState = { viewModel.changeFieldSaveToastState(false) }
+        dismissToastState = { states.changeFieldSaveToastState(false) }
     )
-
 }
 
 @Composable
@@ -209,8 +211,8 @@ fun ContentEditor(viewModel: EditorNoteViewModel) {
             .padding(vertical = 15.dp)
     ) {
         OutlinedTextField(
-            value = viewModel.txtTitle,
-            onValueChange = { viewModel.txtTitle = it },
+            value = viewModel.noteTitle,
+            onValueChange = { viewModel.noteTitle = it },
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 backgroundColor = Color.Transparent,
                 cursorColor = Color.White,
@@ -224,8 +226,8 @@ fun ContentEditor(viewModel: EditorNoteViewModel) {
                 .fillMaxWidth()
         )
         OutlinedTextField(
-            value = viewModel.txtContent,
-            onValueChange = { viewModel.txtContent = it },
+            value = viewModel.noteContent,
+            onValueChange = { viewModel.noteContent = it },
             colors = TextFieldDefaults.outlinedTextFieldColors(
                 backgroundColor = Color.Transparent,
                 cursorColor = Color.White,
@@ -242,3 +244,4 @@ fun ContentEditor(viewModel: EditorNoteViewModel) {
         )
     }
 }
+

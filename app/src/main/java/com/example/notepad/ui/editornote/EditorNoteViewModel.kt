@@ -1,8 +1,6 @@
 package com.example.notepad.ui.editornote
 
 
-import android.annotation.SuppressLint
-import android.content.Context
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,34 +15,41 @@ import javax.inject.Inject
 class EditorNoteViewModel @Inject constructor(
     private val notePadDB: NotePadDB
 ) : ViewModel() {
-    var txtTitle by mutableStateOf("")
-    var txtContent by mutableStateOf("")
+    var noteTitle by mutableStateOf("")
+    var noteContent by mutableStateOf("")
+    var noteColor by mutableStateOf(0L)
     var editNote by mutableStateOf<Note?>(null)
         private set
-    var updateNoteDialogState by mutableStateOf(false)
-        private set
-    var rollbackUpdateNoteDialogState by mutableStateOf(false)
-        private set
-    var successSaveToast by mutableStateOf(false)
-        private set
-    var fieldSaveToast by mutableStateOf(false)
+    var states by mutableStateOf(EditorStates())
         private set
 
     fun addNewNote() {
-        if (txtContent.trim().isNotEmpty() && txtTitle.trim().isNotEmpty()) {
+        if (noteContent.trim().isNotEmpty() && noteTitle.trim().isNotEmpty()) {
             viewModelScope.launch {
-                notePadDB.dao.insertNewNote(Note(nTitle = txtTitle, nContent = txtContent))
-                successSaveToast = true
+                notePadDB.dao.insertNewNote(
+                    Note(
+                        nTitle = noteTitle,
+                        nContent = noteContent,
+                        nColor = noteColor
+                    )
+                )
+                states.changeSuccessSaveToastState(true)
             }
             return
         }
-        fieldSaveToast = true
+        states.changeFieldSaveToastState(true)
     }
 
     fun updateNote() {
         editNote?.let {
             viewModelScope.launch {
-                notePadDB.dao.updateNote(it.copy(nTitle = txtTitle, nContent = txtContent))
+                notePadDB.dao.updateNote(
+                    it.copy(
+                        nTitle = noteTitle,
+                        nContent = noteContent,
+                        nColor = noteColor
+                    )
+                )
             }
         }
     }
@@ -52,40 +57,25 @@ class EditorNoteViewModel @Inject constructor(
     private fun isNoteUpdated(): Boolean {
         return if (editNote != null)
             editNote?.let {
-                it.nContent.trim() != txtContent.trim() || it.nTitle.trim() != txtTitle.trim()
+                it.nContent.trim() != noteContent.trim() || it.nTitle.trim() != noteTitle.trim() || it.nColor != noteColor
             }!!
         else false
     }
 
     fun onUpdatedNote(): Boolean {
-        updateNoteDialogState = isNoteUpdated()
-        return updateNoteDialogState
+        states.changeUpdateDialogState(isNoteUpdated())
+        return states.updateNoteDialogState
     }
 
     fun checkNoteChangeAtRollback(): Boolean {
-        rollbackUpdateNoteDialogState = isNoteUpdated()
-        return rollbackUpdateNoteDialogState
+        states.changeRollbackUpdateNoteDialogState(isNoteUpdated())
+        return states.rollbackUpdateNoteDialogState
     }
 
     fun setEditNoteProperty(note: Note) {
-        txtTitle = note.nTitle.trim()
-        txtContent = note.nContent.trim()
+        noteTitle = note.nTitle.trim()
+        noteContent = note.nContent.trim()
         editNote = note.copy()
     }
 
-    fun changeUpdateDialogState(dialogState: Boolean) {
-        updateNoteDialogState = dialogState
-    }
-
-    fun changeSuccessSaveToastState(toastState: Boolean) {
-        successSaveToast = toastState
-    }
-
-    fun changeFieldSaveToastState(toastState: Boolean) {
-        successSaveToast = toastState
-    }
-
-    fun changeRollbackUpdateNoteDialogState(dialogState: Boolean) {
-        rollbackUpdateNoteDialogState = dialogState
-    }
 }

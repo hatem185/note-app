@@ -19,20 +19,20 @@ class RetrieveNotesViewModel @Inject constructor(private val notePadDB: NotePadD
         private set
     var note by mutableStateOf<Note?>(null)
         private set
-    var openDialog by mutableStateOf(true)
-        private set
-    var openSearchBar by mutableStateOf(false)
-
+    val states by mutableStateOf(HomeStates())
 
     init {
         loadNotesList()
     }
 
-
     fun loadNotesList() {
         notePadDB.dao.getAllNotes().onEach { notes -> notesList = notes }.launchIn(viewModelScope)
     }
-
+    fun deleteAllNote(){
+        viewModelScope.launch {
+            notePadDB.dao.deleteAllNote()
+        }
+    }
     fun getNoteWithId(id: Int) {
         notePadDB.dao.getNoteById(id).onEach { note -> this.note = note }.launchIn(viewModelScope)
     }
@@ -48,11 +48,5 @@ class RetrieveNotesViewModel @Inject constructor(private val notePadDB: NotePadD
             .launchIn(viewModelScope)
     }
 
-    fun changeDialogState(setState: Boolean) {
-        openDialog = setState
-    }
 
-    fun changeSearchBarState(setState: Boolean) {
-        openSearchBar = setState
-    }
 }
