@@ -1,7 +1,7 @@
 package com.example.notepad.ui.editornote
 
 import androidx.activity.addCallback
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.notepad.R
 import com.example.notepad.model.Note
+import com.example.notepad.ui.maincompos.ShowToast
 import com.example.notepad.ui.maincompos.TopBarButton
 import com.example.notepad.util.NoteColors
 import com.ramcosta.composedestinations.annotation.Destination
@@ -35,9 +36,8 @@ fun EditorScreen(
     viewModel: EditorNoteViewModel = hiltViewModel(),
     note: Note? = null
 ) {
-    val onBackPressed = current?.onBackPressedDispatcher
-    viewModel.myContext = LocalContext.current.applicationContext
-    note?.let { viewModel.setEditNoteProperty(note) }
+    val onBackPressed = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    note?.let { viewModel.setEditNoteProperty(it) }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -63,7 +63,10 @@ fun EditorScreen(
 }
 
 @Composable
-fun TopBarEditor(nav: DestinationsNavigator, viewModel: EditorNoteViewModel) {
+fun TopBarEditor(
+    nav: DestinationsNavigator,
+    viewModel: EditorNoteViewModel,
+) {
     val context = LocalContext.current.applicationContext
     TopAppBar(
         title = { },
@@ -81,9 +84,9 @@ fun TopBarEditor(nav: DestinationsNavigator, viewModel: EditorNoteViewModel) {
                 hide = { viewModel.editNote == null }
             ) {
                 if (!viewModel.checkNoteChangeAtRollback()) nav.popBackStack()
+
             }
             Spacer(modifier = Modifier.width(15.dp))
-
             TopBarButton(icon = ImageVector.vectorResource(id = R.drawable.save_icon)) {
                 if (viewModel.editNote == null) {
                     viewModel.addNewNote()
@@ -117,6 +120,17 @@ fun TopBarEditor(nav: DestinationsNavigator, viewModel: EditorNoteViewModel) {
     ) {
         nav.popBackStack()
     }
+    ShowToast(
+        showToast = { viewModel.successSaveToast },
+        message = "The note is saved successfuly.",
+        dismissToastState = { viewModel.changeSuccessSaveToastState(false) }
+    )
+    ShowToast(
+        showToast = { viewModel.fieldSaveToast },
+        message = "The note content or title is empty nothing is saved.",
+        dismissToastState = { viewModel.changeFieldSaveToastState(false) }
+    )
+
 }
 
 @Composable

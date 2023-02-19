@@ -1,8 +1,8 @@
 package com.example.notepad.ui.editornote
 
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -17,37 +17,34 @@ import javax.inject.Inject
 class EditorNoteViewModel @Inject constructor(
     private val notePadDB: NotePadDB
 ) : ViewModel() {
-    lateinit var myContext: Context
-    var editNote by mutableStateOf<Note?>(null)
-        private set
     var txtTitle by mutableStateOf("")
     var txtContent by mutableStateOf("")
+    var editNote by mutableStateOf<Note?>(null)
+        private set
     var updateNoteDialogState by mutableStateOf(false)
         private set
     var rollbackUpdateNoteDialogState by mutableStateOf(false)
+        private set
+    var successSaveToast by mutableStateOf(false)
+        private set
+    var fieldSaveToast by mutableStateOf(false)
         private set
 
     fun addNewNote() {
         if (txtContent.trim().isNotEmpty() && txtTitle.trim().isNotEmpty()) {
             viewModelScope.launch {
                 notePadDB.dao.insertNewNote(Note(nTitle = txtTitle, nContent = txtContent))
-                Toast.makeText(myContext, "New note is saved successfuly.", Toast.LENGTH_SHORT).show()
+                successSaveToast = true
             }
             return
         }
-        Toast.makeText(
-            myContext,
-            "The note content or title is empty nothing is saved.",
-            Toast.LENGTH_SHORT
-        ).show()
+        fieldSaveToast = true
     }
 
     fun updateNote() {
         editNote?.let {
             viewModelScope.launch {
-                notePadDB.dao.updateNote(
-                    it.copy(nTitle = txtTitle, nContent = txtContent)
-                )
+                notePadDB.dao.updateNote(it.copy(nTitle = txtTitle, nContent = txtContent))
             }
         }
     }
@@ -80,9 +77,15 @@ class EditorNoteViewModel @Inject constructor(
         updateNoteDialogState = dialogState
     }
 
+    fun changeSuccessSaveToastState(toastState: Boolean) {
+        successSaveToast = toastState
+    }
+
+    fun changeFieldSaveToastState(toastState: Boolean) {
+        successSaveToast = toastState
+    }
+
     fun changeRollbackUpdateNoteDialogState(dialogState: Boolean) {
         rollbackUpdateNoteDialogState = dialogState
     }
-
-
 }

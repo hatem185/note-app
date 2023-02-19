@@ -1,7 +1,7 @@
 package com.example.notepad.ui.home
 
 import androidx.activity.addCallback
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner.current
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
@@ -12,6 +12,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +36,8 @@ fun DeatailsScreen(
     viewModel: RetrieveNotesViewModel = hiltViewModel(),
     noteId: Int
 ) {
-    val onBackPressed = current?.onBackPressedDispatcher
+    val onBackPressed = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+
     viewModel.getNoteWithId(noteId)
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -53,9 +57,9 @@ fun DeatailsScreen(
             }
         }
     }
+
     onBackPressed?.addCallback { nav.popBackStack() }?.remove()
 }
-
 
 
 @Composable
@@ -82,6 +86,7 @@ fun TopBarDetails(nav: DestinationsNavigator, viewModel: RetrieveNotesViewModel)
         elevation = 0.dp
     )
 }
+
 @Composable
 fun ContentDetails(viewModel: RetrieveNotesViewModel) {
     Column(
